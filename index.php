@@ -63,13 +63,13 @@ function crawl ($URL){
 	#
 	
 	#Speichern des Links falls noch nicht vorhanden ansonsten update des timestamps
-	$sql = "SELECT * FROM `website` WHERE `link`='$URL'";	
+	$sql = "SELECT * FROM `links` WHERE `link`='$URL'";	
 	
 	if(mysqli_num_rows(mysqli_query($verbindung, $sql))){
-		$sql="UPDATE `website` SET `timestamp`=NOW(), `visited`=TRUE WHERE `link`='$URL'";
+		$sql="UPDATE `links` SET `timestamp`= NOW() WHERE `link`='$URL'";
 	}
 	else{
-		$sql="INSERT INTO `website` (`link`,`visited`) VALUES ('$URL',TRUE)";
+		$sql="INSERT INTO `links` (`link`,`timestamp`) VALUES ('$URL',NOW())";
 	}	
 	
 	$sqlErgebnis = mysqli_query($verbindung, $sql);
@@ -83,29 +83,28 @@ function crawl ($URL){
 	foreach($links as $link){		
 		if(preg_match($expDomain, $link)){
 			array_push($links, $link);
-			$sql = "SELECT * FROM `website` WHERE `link` = '$link'";
-			echo $sql;
+			$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			$reihen = mysqli_num_rows($sqlErgebnis);
 			echo "reihen1: $reihen";
 			if(!$reihen){
-				$sql = "INSERT INTO `website` (`link`, `visited`) VALUES ('$link',FALSE)";
+				$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
 				$sqlErgebnis = mysqli_query($verbindung, $sql);
 			}
 			echo "<br>Link: $link";
 		}
 		if (preg_match($expDomain, $link)){
 			array_push($links, $link);
-			$sql = "SELECT * FROM `website` WHERE `link` = '$link'";
+			$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			$reihen = mysqli_num_rows($sqlErgebnis);
 			echo "reihen2: $reihen";
 			if(!$reihen){
-				$sql = "INSERT INTO `website` (`link`, `visited`) VALUES ('$link',FALSE)";
+				$sql = "INSERT INTO `website` (`link`) VALUES ('$link')";
 			}
 			echo "<br>Link: $link";
 		}
-		$sql = "SELECT * FROM `website` WHERE `link` = '$link' AND `visited` = FALSE";
+		$sql = "SELECT * FROM `website` WHERE `link` = '$link' AND `timestamp` <  NOW() - INTERVAL '1 DAY'";
 		$sqlErgebnis = mysqli_query($verbindung, $sql);
 		if(mysqli_num_rows($sqlErgebnis)){
 			crawl($link);
@@ -123,6 +122,10 @@ function crawl ($URL){
 <html>
 	<body>
 		<h2>Webcrawler</h2>
+		<form action="/submit.php" method="post">
+			<label>DHBW add URL to Database</label>
+			<input type="text" name="url"><br><br>			
+		</form>
 		<?php
 			crawl('http://www.dhbw-heidenheim.de');
 		?>

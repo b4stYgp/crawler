@@ -30,6 +30,10 @@
 	<hr>
 	
 	<?php
+		include('create_tables.php');
+	?>
+	
+	<?php
 		if(array_key_exists('searchButton', $_POST)) {
 			searchbutton();
 		}

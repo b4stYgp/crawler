@@ -33,6 +33,7 @@ class Crawler {
 			//preg_match_all('/<a([^>]+)\>(.*?)\<\/a\>/i', $this->markup, $links);
 			preg_match_all('/href=\"(.*?)\"/i', $this->markup, $links);
 			$links = !empty($links[1]) ? $links[1] : FALSE;
+			
 			$new_links = array();
 
 			foreach ($links as $link) {
@@ -100,7 +101,7 @@ function set_title_words($url){
 
 			
 			echo "<br><br>LINK: <a href='$url'>$url</a>";
-			echo "<br>WORDS FOUND: ";
+			echo "<br>KEYWORDS: ";
 			foreach($title_words as $word){	
 				$word = strtolower($word);
 				if (!in_array($word, $stopwoerter) && strlen($word)>2) {

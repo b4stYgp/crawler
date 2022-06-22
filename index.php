@@ -3,10 +3,19 @@
 		<h2>Webcrawler</h2>
 		<form target="_blank" action="/submit.php" method="post" id="crawlerForm">
 			<label>DHBW add URL to Database</label>
-			<input type="text" name="url"><br><br>
+			<input type="text" name="url">
+			<label for="iterations"> Depth:</label>
+			<select name="iterations" id="iterations">
+			  <option value="1">1</option>
+			  <option value="2">2</option>
+			  <option value="3">3</option>
+			  <option value="4">4</option>
+			  <option value="5">5</option>
+			</select>			
+			
+			<br><br>
 			<p>KEIN https:// -- nur www.xyz.de</p>
-			<label>Anzahl iterationen</label>
-			<input type="number" name="iterationen">			
+			
 		</form>
 		<button type="submit" form="crawlerForm" value="Submit">Daten Absenden</button>
 	

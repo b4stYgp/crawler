@@ -18,7 +18,18 @@
 		<button type="submit" form="crawlerForm" value="Submit">Daten Absenden</button>
 	
 	<br><br><br>
+	<hr>	
+	<br><br>
+		<h2>DHBW search</h2>
+		<form method="post" id="searchForm"><br><br>
+			<input type="text" name="suchBegriff" value="Search Term"><br><br>
+		</form>
+		<button type="submit" name="searchButton" form="searchForm">Daten absenden</button>
+	</body>	
+	<br><br>
 	<hr>
+	<br><br>
+	
 	<?php
 		if(array_key_exists('searchButton', $_POST)) {
 			searchbutton();
@@ -44,8 +55,8 @@
 			}
 			##
 			mysqli_real_escape_string($verbindung, $_POST["suchBegriff"]);
-			$suchBergiff = strtolower($_POST["suchBegriff"]);			
-			$sql = 'SELECT `id` from `words` WHERE `word` like %$suchBegriff%'; #Get Suchbegriff Id
+			$suchBegriff = strtolower($_POST["suchBegriff"]);			
+			$sql = "SELECT `id` from `words` WHERE `words` like '%$suchBegriff%'";#Get Suchbegriff Id
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			if(mysqli_num_rows($sqlErgebnis) > 0 )
 			{
@@ -53,11 +64,11 @@
 				while($reihen = mysqli_fetch_assoc($sqlErgebnis))
 				{	
 					$suchBegriffId = $reihen["id"];
-					echo '<li>$_POST["suchBegriff"] has id: $suchBegriffId</li>';
+					echo "<li>$suchBegriff has id: $suchBegriffId</li>";
 					$sql = "SELECT `links`.`id`, `links`.`link` FROM `words_links`
 							LEFT JOIN `links` 
 							ON `words_links`.`id_links` = `links`.`id` 
-							WHERE `id_words` = $suchBegriffId";
+							WHERE `id_words` = '$suchBegriffId'";
 					$sqlErgebnis = mysqli_query($verbindung, $sql);
 					echo "<ul>";
 					while($reihen = mysqli_fetch_assoc($sqlErgebnis))
@@ -74,15 +85,5 @@
 			
 		}
 	?>
-	<br><br>
-		<h2>DHBW search</h2>
-		<form method="post" id="searchForm"><br><br>
-			<input type="text" name="suchBegriff" value="Search Term"><br><br>
-		</form>
-		<button type="submit" name="searchButton" form="searchForm">Daten absenden</button>
-	</body>	
-	<br><br>
-	<hr>
-	<br><br>
 	
 </html>

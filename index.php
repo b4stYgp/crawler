@@ -29,7 +29,15 @@ class Crawler {
 		if (!empty($this->markup)){
 			//preg_match_all('/<a([^>]+)\>(.*?)\<\/a\>/i', $this->markup, $links);
 			preg_match_all('/href=\"(.*?)\"/i', $this->markup, $links);
-			return !empty($links[1]) ? $links[1] : FALSE;
+			$links = !empty($links[1]) ? $links[1] : FALSE;
+			$new_links = array();
+
+			foreach ($links as $link) {
+				if(str_starts_with($link, "https://") || str_starts_with($link, "http://")){
+					array_push($new_links, $link);
+				}
+			}
+			return $new_links;
 		}
 	}
 }
@@ -77,34 +85,23 @@ function crawl ($URL){
 	$crawl = new Crawler($URL);
 	$images = $crawl->get('images');
 	$links = $crawl->get('links');
+	echo implode("|",$links);;
 	$expDomain = "/https?(:\/\/)(www\.)*([a-z]|-|\.)+/";
 	$expSubDomain = "/https?(:\/\/)(www\.)*(([a-z]|-|\.)+\/)(([a-z]|-)+\/)+/";
 	
-	foreach($links as $link){		
-		if(preg_match($expDomain, $link)){
-			array_push($links, $link);
-			$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
+	foreach($links as $link){	
+		array_push($links, $link);
+		$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
+		$sqlErgebnis = mysqli_query($verbindung, $sql);
+		$reihen = mysqli_num_rows($sqlErgebnis);
+		echo "reihen1: $reihen";
+		if(!$reihen){
+			$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
-			$reihen = mysqli_num_rows($sqlErgebnis);
-			echo "reihen1: $reihen";
-			if(!$reihen){
-				$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
-				$sqlErgebnis = mysqli_query($verbindung, $sql);
-			}
-			echo "<br>Link: $link";
 		}
-		if (preg_match($expDomain, $link)){
-			array_push($links, $link);
-			$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
-			$sqlErgebnis = mysqli_query($verbindung, $sql);
-			$reihen = mysqli_num_rows($sqlErgebnis);
-			echo "reihen2: $reihen";
-			if(!$reihen){
-				$sql = "INSERT INTO `website` (`link`) VALUES ('$link')";
-			}
-			echo "<br>Link: $link";
-		}
-		$sql = "SELECT * FROM `website` WHERE `link` = '$link' AND `timestamp` <  NOW() - INTERVAL '1 DAY'";
+		echo "<br>Link: $link";
+		
+		$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND `timestamp` <  (NOW() - 86400)";
 		$sqlErgebnis = mysqli_query($verbindung, $sql);
 		if(mysqli_num_rows($sqlErgebnis)){
 			crawl($link);

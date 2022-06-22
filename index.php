@@ -3,8 +3,7 @@
 		<h2>Webcrawler</h2>
 		<form target="_blank" action="/submit.php" method="post" id="crawlerForm">
 			<label>DHBW add URL to Database</label>
-			<input type="text" name="url"><br><br>
-			<p>KEIN https:// -- nur www.xyz.de</p>
+			<input type="text" name="url" placeholder="www.dhbw-heidenheim.de" required="required">
 			<label for="iterations"> Depth:</label>
 			<select name="iterations" id="iterations">
 			  <option value="0">0</option>
@@ -13,22 +12,22 @@
 			  <option value="3">3</option>
 			  <option value="4">4</option>
 			  <option value="5">5</option>
-			</select>				
+			</select>		
+			<br><br>
+			<p>KEIN https:// -- nur www.xyz.de</p>			
 		</form>
-		<button type="submit" form="crawlerForm" value="Submit">Daten Absenden</button>
+		<button type="submit" form="crawlerForm" value="Submit">Start</button>
 	
-	<br><br><br>
-	<hr>	
-	<br><br>
+		<br><br><br>
+		<hr>
 		<h2>DHBW search</h2>
-		<form method="post" id="searchForm"><br><br>
-			<input type="text" name="suchBegriff" value="Search Term"><br><br>
+		<form method="post" id="searchForm"><br>
+			<input type="text" name="suchBegriff" value="" placeholder="Search term" required="required"><br><br>
 		</form>
-		<button type="submit" name="searchButton" form="searchForm">Daten absenden</button>
+		<button type="submit" name="searchButton" form="searchForm">Search</button>
 	</body>	
 	<br><br>
 	<hr>
-	<br><br>
 	
 	<?php
 		if(array_key_exists('searchButton', $_POST)) {
@@ -75,7 +74,7 @@
 					{
 						$linkId = $reihen["id"];
 						$link = $reihen["link"];
-						echo "<li>wordlink found. The id_link is $linkId <br> Link: $link</li>";
+						echo "<li>wordlink found. The id_link is $linkId <br> Link: <a href='$link'>$link</a></li>";
 					}
 					echo "</ul>";
 				}

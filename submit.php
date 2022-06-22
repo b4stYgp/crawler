@@ -50,7 +50,7 @@ function set_title_words($url){
 		$str = file_get_contents($url);
 		if(strlen($str)>0){
 			$title_complete = preg_match('/<title[^>]*>(.*?)<\/title>/ims', $str, $match) ? $match[1] : null;
-			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+),(&#–:]+/', '', $title_complete); # removes special characters
+			$title_complete = preg_replace("/[0-9\@\.\;\'|-~+),(&#–:]+/", '', $title_complete); # removes special characters
 			$title_complete = preg_replace('/[\s]+/mu', ' ', $title_complete); # removes multiple whitespaces
 			$title_words = explode(" ",$title_complete);
 		
@@ -80,11 +80,9 @@ function set_title_words($url){
 			
 			# get the id of the link
 			$sql = "SELECT * FROM `links` WHERE `link` = '$url'";
-			echo $sql;
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			$row = $sqlErgebnis->fetch_row();
 			$link_id = $row[0];
-			echo "</br>LINK_ID: $link_id";
 			
 			$stopwoerter = array(
 				"and", "the", "of", "to", "einer", "eine", "eines", "einem", "einen", "der",
@@ -101,31 +99,36 @@ function set_title_words($url){
 			);
 
 			
+			echo "<br><br>LINK: <a href='$url'>$url</a>";
+			echo "<br>WORDS FOUND: ";
 			foreach($title_words as $word){	
 				$word = strtolower($word);
 				if (!in_array($word, $stopwoerter) && strlen($word)>2) {
-			
+					echo "$word; ";
 					# check if word already in list
 					$sql = "SELECT * FROM `words` WHERE words = '$word'";
 					$sqlErgebnis = mysqli_query($verbindung, $sql);
 					$reihen = mysqli_num_rows($sqlErgebnis);
 					if($reihen <= 0){
 						$sql = "INSERT INTO `words`(`words`) VALUES ('$word')";
-						echo "</br>$sql";
 						$sqlErgebnis = mysqli_query($verbindung, $sql);
 					}
 					
 					# get the id of the current word
 					$sql = "SELECT * FROM `words` WHERE words = '$word'";
-					echo $sql;
 					$sqlErgebnis = mysqli_query($verbindung, $sql);
 					$row = $sqlErgebnis->fetch_row();
 					$word_id = $row[0];
 					
-					# insert new linking (between link and word)
-					$sql = "INSERT INTO `words_links`(`id_words`, `id_links`) VALUES ($word_id, $link_id)";
-					echo "</br>$sql";
+					# check if linking is already in database
+					$sql = "SELECT * FROM `words_links` WHERE id_words = $word_id and id_links = $link_id";
 					$sqlErgebnis = mysqli_query($verbindung, $sql);
+					$reihen = mysqli_num_rows($sqlErgebnis);
+					if($reihen <= 0){
+						# insert new linking (between link and word)
+						$sql = "INSERT INTO `words_links`(`id_words`, `id_links`) VALUES ($word_id, $link_id)";
+						$sqlErgebnis = mysqli_query($verbindung, $sql);
+					}
 				}
 			}
 		}
@@ -184,7 +187,7 @@ function crawl ($URL, $iteration){
 				$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
 				$sqlErgebnis = mysqli_query($verbindung, $sql);
 			}
-			echo "<br>Link: $link";
+			
 			$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND (`timestamp` <  (NOW() - 86400) OR `timestamp` is NULL)";
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			if(mysqli_num_rows($sqlErgebnis)){

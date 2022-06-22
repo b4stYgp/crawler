@@ -46,13 +46,10 @@ function set_title_words($url){
 		# https://stackoverflow.com/a/4349078/14522363
 		$str = file_get_contents($url);
 		if(strlen($str)>0){
-			$str = trim(preg_replace('/\s+/', ' ', $str)); // supports line breaks inside <title>
-			preg_match("/\<title\>(.*)\<\/title\>/i",$str,$title); // ignore case
-			$title_complete = $title[1];
-			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+)(]+/', '', $title_complete); # removes special characters
+			$title_complete = preg_match('/<title[^>]*>(.*?)<\/title>/ims', $str, $match) ? $match[1] : null;
+			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+)(&#–:]+/', '', $title_complete); # removes special characters
 			$title_complete = preg_replace('/[\s]+/mu', ' ', $title_complete); # removes multiple whitespaces
 			$title_words = explode(" ",$title_complete);
-			
 			
 			$servername = 'localhost';
 			$dbname = 'mydb';

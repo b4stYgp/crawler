@@ -50,6 +50,7 @@ function set_title_words($url){
 			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+)(&#–:]+/', '', $title_complete); # removes special characters
 			$title_complete = preg_replace('/[\s]+/mu', ' ', $title_complete); # removes multiple whitespaces
 			$title_words = explode(" ",$title_complete);
+		
 			
 			$servername = 'localhost';
 			$dbname = 'mydb';
@@ -82,28 +83,47 @@ function set_title_words($url){
 			$link_id = $row[0];
 			echo "</br>LINK_ID: $link_id";
 			
+			$stopwoerter = array(
+				"and", "the", "of", "to", "einer", "eine", "eines", "einem", "einen", "der",
+				"die", "das", "dass", "daß", "du", "er", "sie", "es", "was", "wer", "wie",
+				"wir", "und", "oder", "ohne", "mit", "am", "im", "in", "aus", "auf", "ist",
+				"sein", "war", "wird", "ihr", "ihre", "ihres", "ihnen", "ihrer", "als", "für",
+				"von", "mit", "dich", "dir", "mich", "mir", "mein", "sein", "kein", "durch",
+				"wegen", "wird", "sich", "bei", "beim", "noch", "den", "dem", "zu", "zur",
+				"zum", "auf", "ein", "auch", "werden", "an", "des", "sein", "sind", "vor",
+				"nicht", "sehr", "um", "unsere", "ohne", "so", "da", "nur", "diese", "dieser",
+				"diesem", "dieses", "nach", "über", "mehr", "hat", "bis", "uns", "unser",
+				"unserer", "unserem", "unsers", "euch", "euers", "euer", "eurem", "ihr",
+				"ihres", "ihrer", "ihrem", "alle", "vom"
+			);
+
+			
 			foreach($title_words as $word){	
-				# check if word already in list
-				$sql = "SELECT * FROM `words` WHERE words = '$word'";
-				$sqlErgebnis = mysqli_query($verbindung, $sql);
-				$reihen = mysqli_num_rows($sqlErgebnis);
-				if($reihen <= 0){
-					$sql = "INSERT INTO `words`(`words`) VALUES ('$word')";
+			
+				if (!in_array($word, $stopwoerter)) {
+			
+					# check if word already in list
+					$sql = "SELECT * FROM `words` WHERE words = '$word'";
+					$sqlErgebnis = mysqli_query($verbindung, $sql);
+					$reihen = mysqli_num_rows($sqlErgebnis);
+					if($reihen <= 0){
+						$sql = "INSERT INTO `words`(`words`) VALUES ('$word')";
+						echo "</br>$sql";
+						$sqlErgebnis = mysqli_query($verbindung, $sql);
+					}
+					
+					# get the id of the current word
+					$sql = "SELECT * FROM `words` WHERE words = '$word'";
+					echo $sql;
+					$sqlErgebnis = mysqli_query($verbindung, $sql);
+					$row = $sqlErgebnis->fetch_row();
+					$word_id = $row[0];
+					
+					# insert new linking (between link and word)
+					$sql = "INSERT INTO `words_links`(`id_words`, `id_links`) VALUES ($word_id, $link_id)";
 					echo "</br>$sql";
 					$sqlErgebnis = mysqli_query($verbindung, $sql);
 				}
-				
-				# get the id of the current word
-				$sql = "SELECT * FROM `words` WHERE words = '$word'";
-				echo $sql;
-				$sqlErgebnis = mysqli_query($verbindung, $sql);
-				$row = $sqlErgebnis->fetch_row();
-				$word_id = $row[0];
-				
-				# insert new linking (between link and word)
-				$sql = "INSERT INTO `words_links`(`id_words`, `id_links`) VALUES ($word_id, $link_id)";
-				echo "</br>$sql";
-				$sqlErgebnis = mysqli_query($verbindung, $sql);
 			}
 		}
 	}

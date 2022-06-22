@@ -44,73 +44,69 @@ class Crawler {
 
 function crawl ($URL,$iteration){
 	# von Sebastian Eisele und Tobias Zillmann
-	if($iteration>5)
+	$servername = 'localhost';
+	$dbname = 'mydb';
+	$dbusername = 'root';
+	$dbpasswort = '';
+	$dbserverdaten = "mysql:host=$servername;dbname=$dbname";
+
+	#Datenbankverbindung herstellen
+	$verbindung = mysqli_connect($servername, $dbusername, $dbpasswort);
+
+	if(!$verbindung)
 	{
-		echo "ITERATION GROSSER 5"; 
+		echo "keine Verbindung";
+		exit;
 	}
-	else
+
+	$datenbank = mysqli_select_db($verbindung, $dbname);
+
+	if(!$datenbank)
 	{
-		$servername = 'localhost';
-		$dbname = 'mydb';
-		$dbusername = 'root';
-		$dbpasswort = '';
-		$dbserverdaten = "mysql:host=$servername;dbname=$dbname";
-
-		#Datenbankverbindung herstellen
-		$verbindung = mysqli_connect($servername, $dbusername, $dbpasswort);
-
-		if(!$verbindung)
-		{
-			echo "keine Verbindung";
-			exit;
-		}
-
-		$datenbank = mysqli_select_db($verbindung, $dbname);
-
-		if(!$datenbank)
-		{
-			echo "keine Verbindung zur Datenbank";
-			exit;
-		}	
-		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-		#Speichern des Links falls noch nicht vorhanden ansonsten update des timestamps
-		$sql = "SELECT * FROM `links` WHERE `link`='$URL'";	
-		
-		if(mysqli_num_rows(mysqli_query($verbindung, $sql))){
-			$sql="UPDATE `links` SET `timestamp`= NOW() WHERE `link`='$URL'";
-		}
-		else{
-			$sql="INSERT INTO `links` (`link`,`timestamp`) VALUES ('$URL',NOW())";
-		}	
-		
-		$sqlErgebnis = mysqli_query($verbindung, $sql);
-		
-		$crawl = new Crawler($URL);
-		$images = $crawl->get('images');
-		$links = $crawl->get('links');
-		if($links != NULL)
-		{
-			foreach($links as $link){	
-				array_push($links, $link);
-				$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
+		echo "keine Verbindung zur Datenbank";
+		exit;
+	}	
+	mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+	#Speichern des Links falls noch nicht vorhanden ansonsten update des timestamps
+	$sql = "SELECT * FROM `links` WHERE `link`='$URL'";	
+	
+	if(mysqli_num_rows(mysqli_query($verbindung, $sql))){
+		$sql="UPDATE `links` SET `timestamp`= NOW() WHERE `link`='$URL'";
+	}
+	else{
+		$sql="INSERT INTO `links` (`link`,`timestamp`) VALUES ('$URL',NOW())";
+	}	
+	
+	$sqlErgebnis = mysqli_query($verbindung, $sql);
+	
+	$crawl = new Crawler($URL);
+	$images = $crawl->get('images');
+	$links = $crawl->get('links');
+	if($links != NULL)
+	{
+		foreach($links as $link){	
+			array_push($links, $link);
+			$link = str_replace("'","%27",$link); #manche Links scheinen ' zu besitzen...
+			$sql = "SELECT * FROM `links` WHERE `link` = '$link'";
+			$sqlErgebnis = mysqli_query($verbindung, $sql);
+			$reihen = mysqli_num_rows($sqlErgebnis);
+			if(!$reihen){
+				$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
 				$sqlErgebnis = mysqli_query($verbindung, $sql);
-				$reihen = mysqli_num_rows($sqlErgebnis);
-				if(!$reihen){
-					$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
-					$sqlErgebnis = mysqli_query($verbindung, $sql);
-				}
-				echo "<br>Link: $link";
-				$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND (`timestamp` <  (NOW() - 86400) OR `timestamp` is NULL)";
-				$sqlErgebnis = mysqli_query($verbindung, $sql);
-				if(mysqli_num_rows($sqlErgebnis)){
-					echo "new crawl initiate";
+			}
+			echo "<br>Link: $link";
+			$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND (`timestamp` <  (NOW() - 86400) OR `timestamp` is NULL)";
+			$sqlErgebnis = mysqli_query($verbindung, $sql);
+			if(mysqli_num_rows($sqlErgebnis)){
+				if($iteration < 3)
+				{
 					crawl($link,$iteration+1);
 				}
-				mysqli_free_result($sqlErgebnis);
-			}				
-		}		
-		mysqli_close($verbindung);
-	}
+			}
+			mysqli_free_result($sqlErgebnis);
+		}				
+	}		
+	mysqli_close($verbindung);
 }
 $servername = 'localhost';
 $dbname = 'mydb';
@@ -145,7 +141,6 @@ if(isset($_POST))
 }
 else{
 	echo "error";
-	sleep(15);
 }
 
 ?>

@@ -50,7 +50,7 @@ function set_title_words($url){
 		$str = file_get_contents($url);
 		if(strlen($str)>0){
 			$title_complete = preg_match('/<title[^>]*>(.*?)<\/title>/ims', $str, $match) ? $match[1] : null;
-			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+)(&#–:]+/', '', $title_complete); # removes special characters
+			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+),(&#–:]+/', '', $title_complete); # removes special characters
 			$title_complete = preg_replace('/[\s]+/mu', ' ', $title_complete); # removes multiple whitespaces
 			$title_words = explode(" ",$title_complete);
 		
@@ -230,8 +230,13 @@ if(isset($_POST))
 	mysqli_close($verbindung);
 	$link = "https://";
 	$link .= $_POST["url"];	
+	if($link == "https://"){
+		exit;
+		header("Location: index.php");
+	}
 	$iterations = $_POST["iterations"];
-	echo $iterations;
+	echo "<h4>Crawling: $link     - Depth: $iterations</h4>";
+	echo "</br>";
 	crawl($link, $iterations);
 }
 else{

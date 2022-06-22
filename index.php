@@ -68,6 +68,5 @@
 	</body>	
 	<br><br>
 	<hr>
-	<br><br>
-	
+	<br><br>	
 </html>

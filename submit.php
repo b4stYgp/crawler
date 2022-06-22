@@ -1,4 +1,7 @@
 <?php
+
+ini_set('max_execution_time', 300); 
+
 class Crawler {
 	protected $markup = '';
 	public $base = '';
@@ -94,13 +97,13 @@ function set_title_words($url){
 				"nicht", "sehr", "um", "unsere", "ohne", "so", "da", "nur", "diese", "dieser",
 				"diesem", "dieses", "nach", "über", "mehr", "hat", "bis", "uns", "unser",
 				"unserer", "unserem", "unsers", "euch", "euers", "euer", "eurem", "ihr",
-				"ihres", "ihrer", "ihrem", "alle", "vom"
+				"ihres", "ihrer", "ihrem", "alle", "vom", "for", "your"
 			);
 
 			
 			foreach($title_words as $word){	
-			
-				if (!in_array($word, $stopwoerter)) {
+				$word = strtolower($word);
+				if (!in_array($word, $stopwoerter) && strlen($word)>2) {
 			
 					# check if word already in list
 					$sql = "SELECT * FROM `words` WHERE words = '$word'";
@@ -129,7 +132,7 @@ function set_title_words($url){
 	}
 
 
-function crawl ($URL,$iteration){
+function crawl ($URL, $iteration){
 	# von Sebastian Eisele und Tobias Zillmann
 	$servername = 'localhost';
 	$dbname = 'mydb';
@@ -185,9 +188,9 @@ function crawl ($URL,$iteration){
 			$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND (`timestamp` <  (NOW() - 86400) OR `timestamp` is NULL)";
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			if(mysqli_num_rows($sqlErgebnis)){
-				if($iteration < 0)
+				if($iteration > 0)
 				{
-					crawl($link,$iteration+1);
+					crawl($link, $iteration-1);
 				}
 				else {
 					set_title_words($link);
@@ -227,7 +230,9 @@ if(isset($_POST))
 	mysqli_close($verbindung);
 	$link = "https://";
 	$link .= $_POST["url"];	
-	crawl($link,0);
+	$iterations = $_POST["iterations"];
+	echo $iterations;
+	crawl($link, $iterations);
 }
 else{
 	echo "error";

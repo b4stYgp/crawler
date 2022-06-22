@@ -100,10 +100,8 @@ function crawl ($URL){
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 		}
 		echo "<br>Link: $link";
-		
 		$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND `timestamp` <  (NOW() - 86400)";
 		$sqlErgebnis = mysqli_query($verbindung, $sql);
-		echo $sqlErgebnis;
 		if(mysqli_num_rows($sqlErgebnis)){
 			crawl($link);
 		}

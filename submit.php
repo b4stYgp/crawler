@@ -42,6 +42,76 @@ class Crawler {
 	}
 }
 
+function set_title_words($url){
+		# https://stackoverflow.com/a/4349078/14522363
+		$str = file_get_contents($url);
+		if(strlen($str)>0){
+			$str = trim(preg_replace('/\s+/', ' ', $str)); // supports line breaks inside <title>
+			preg_match("/\<title\>(.*)\<\/title\>/i",$str,$title); // ignore case
+			$title_complete = $title[1];
+			$title_complete = preg_replace('/[0-9\@\.\;\"|-~+)(]+/', '', $title_complete); # removes special characters
+			$title_complete = preg_replace('/[\s]+/mu', ' ', $title_complete); # removes multiple whitespaces
+			$title_words = explode(" ",$title_complete);
+			
+			
+			$servername = 'localhost';
+			$dbname = 'mydb';
+			$dbusername = 'root';
+			$dbpasswort = '';
+			$dbserverdaten = "mysql:host=$servername;dbname=$dbname";
+
+			#Datenbankverbindung herstellen
+			$verbindung = mysqli_connect($servername, $dbusername, $dbpasswort);
+
+			if(!$verbindung)
+			{
+				echo "keine Verbindung";
+				exit;
+			}
+
+			$datenbank = mysqli_select_db($verbindung, $dbname);
+
+			if(!$datenbank)
+			{
+				echo "keine Verbindung zur Datenbank";
+				exit;
+			}	
+			
+			# get the id of the link
+			$sql = "SELECT * FROM `links` WHERE `link` = '$url'";
+			echo $sql;
+			$sqlErgebnis = mysqli_query($verbindung, $sql);
+			$row = $sqlErgebnis->fetch_row();
+			$link_id = $row[0];
+			echo "</br>LINK_ID: $link_id";
+			
+			foreach($title_words as $word){	
+				# check if word already in list
+				$sql = "SELECT * FROM `words` WHERE words = '$word'";
+				$sqlErgebnis = mysqli_query($verbindung, $sql);
+				$reihen = mysqli_num_rows($sqlErgebnis);
+				if($reihen <= 0){
+					$sql = "INSERT INTO `words`(`words`) VALUES ('$word')";
+					echo "</br>$sql";
+					$sqlErgebnis = mysqli_query($verbindung, $sql);
+				}
+				
+				# get the id of the current word
+				$sql = "SELECT * FROM `words` WHERE words = '$word'";
+				echo $sql;
+				$sqlErgebnis = mysqli_query($verbindung, $sql);
+				$row = $sqlErgebnis->fetch_row();
+				$word_id = $row[0];
+				
+				# insert new linking (between link and word)
+				$sql = "INSERT INTO `words_links`(`id_words`, `id_links`) VALUES ($word_id, $link_id)";
+				echo "</br>$sql";
+				$sqlErgebnis = mysqli_query($verbindung, $sql);
+			}
+		}
+	}
+
+
 function crawl ($URL,$iteration){
 	# von Sebastian Eisele und Tobias Zillmann
 	$servername = 'localhost';
@@ -75,9 +145,9 @@ function crawl ($URL,$iteration){
 	}
 	else{
 		$sql="INSERT INTO `links` (`link`,`timestamp`) VALUES ('$URL',NOW())";
-	}	
-	
+	}
 	$sqlErgebnis = mysqli_query($verbindung, $sql);
+	set_title_words($URL);
 	
 	$crawl = new Crawler($URL);
 	$images = $crawl->get('images');
@@ -98,9 +168,12 @@ function crawl ($URL,$iteration){
 			$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND (`timestamp` <  (NOW() - 86400) OR `timestamp` is NULL)";
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			if(mysqli_num_rows($sqlErgebnis)){
-				if($iteration < 3)
+				if($iteration < 0)
 				{
 					crawl($link,$iteration+1);
+				}
+				else {
+					set_title_words($link);
 				}
 			}
 			mysqli_free_result($sqlErgebnis);

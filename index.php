@@ -100,11 +100,12 @@ function crawl ($URL){
 			$reihen = mysqli_num_rows($sqlErgebnis);
 			echo "reihen2: $reihen";
 			if(!$reihen){
-				$sql = "INSERT INTO `website` (`link`) VALUES ('$link')";
+				$sql = "INSERT INTO `links` (`link`) VALUES ('$link')";
 			}
 			echo "<br>Link: $link";
 		}
-		$sql = "SELECT * FROM `website` WHERE `link` = '$link' AND `timestamp` <  NOW() - INTERVAL '1 DAY'";
+		$sql = "SELECT * FROM `links` WHERE `link` = '$link' AND `timestamp` <  NOW() - INTERVAL '1 DAY'";
+		echo $sql;
 		$sqlErgebnis = mysqli_query($verbindung, $sql);
 		if(mysqli_num_rows($sqlErgebnis)){
 			crawl($link);

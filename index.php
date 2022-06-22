@@ -3,7 +3,8 @@
 		<h2>Webcrawler</h2>
 		<form target="_blank" action="/submit.php" method="post" id="crawlerForm">
 			<label>DHBW add URL to Database</label>
-			<input type="text" name="url">
+			<input type="text" name="url"><br><br>
+			<p>KEIN https:// -- nur www.xyz.de</p>
 			<label for="iterations"> Depth:</label>
 			<select name="iterations" id="iterations">
 			  <option value="0">0</option>
@@ -12,11 +13,7 @@
 			  <option value="3">3</option>
 			  <option value="4">4</option>
 			  <option value="5">5</option>
-			</select>			
-			
-			<br><br>
-			<p>KEIN https:// -- nur www.xyz.de</p>
-			
+			</select>				
 		</form>
 		<button type="submit" form="crawlerForm" value="Submit">Daten Absenden</button>
 	
@@ -48,15 +45,33 @@
 			##
 			mysqli_real_escape_string($verbindung, $_POST["suchBegriff"]);
 			$suchBergiff = strtolower($_POST["suchBegriff"]);			
-			$sql = 'SELECT `id` from `words` WHERE `word` like %$suchBegriff%';
+			$sql = 'SELECT `id` from `words` WHERE `word` like %$suchBegriff%'; #Get Suchbegriff Id
 			$sqlErgebnis = mysqli_query($verbindung, $sql);
 			if(mysqli_num_rows($sqlErgebnis) > 0 )
 			{
+				echo "<ul>";
 				while($reihen = mysqli_fetch_assoc($sqlErgebnis))
-				{
-					echo '<ul>$reihen["id"]</ul>';					
+				{	
+					$suchBegriffId = $reihen["id"];
+					echo '<li>$_POST["suchBegriff"] has id: $suchBegriffId</li>';
+					$sql = "SELECT `links`.`id`, `links`.`link` FROM `words_links`
+							LEFT JOIN `links` 
+							ON `words_links`.`id_links` = `links`.`id` 
+							WHERE `id_words` = $suchBegriffId";
+					$sqlErgebnis = mysqli_query($verbindung, $sql);
+					echo "<ul>";
+					while($reihen = mysqli_fetch_assoc($sqlErgebnis))
+					{
+						$linkId = $reihen["id"];
+						$link = $reihen["link"];
+						echo "<li>wordlink found. The id_link is $linkId <br> Link: $link</li>";
+					}
+					echo "</ul>";
 				}
+				mysqli_free_result($sqlErgebnis);				
+				echo "</ul>";
 			}
+			
 		}
 	?>
 	<br><br>
@@ -68,5 +83,6 @@
 	</body>	
 	<br><br>
 	<hr>
-	<br><br>	
+	<br><br>
+	
 </html>

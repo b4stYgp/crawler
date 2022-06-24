@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(E_ERROR | E_PARSE);
 ini_set('max_execution_time', 300); 
 
 class Crawler {

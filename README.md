@@ -11,7 +11,10 @@ $dbpasswort = '';
 
 Beim Aufruf von localhost im Browser werden die Tabellen generiert, falls nicht schon vorhanden.
 
-Aufbau
-index.php
-create_tables.php die auf mydb.sql zugreift
+Aufbau:
+
+index.php mit dem Frontend
+
+create_tables.php die auf mydb.sql zugreift und die Tabellen generieren lässt
+
 submit.php in dem der Code für den Crawler liegt.

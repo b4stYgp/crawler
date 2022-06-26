@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ERROR | E_PARSE);
-ini_set('max_execution_time', 300); 
+ini_set('max_execution_time', 3600); 
 
 class Crawler {
 	protected $markup = '';

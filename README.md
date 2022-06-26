@@ -13,7 +13,7 @@ Beim Aufruf von localhost im Browser werden die Tabellen generiert, falls nicht 
 
 Aufbau:
 
-index.php mit dem Frontend. Hier kann mit dem Parameter "Depth" eingestellt werden wie Tief gecrawled werden soll, da der Crawler und die Specherung der Daten in die Datenbank seine Zeit benötigt, wurde die Abbruchzeit des Scripts von standardmäßigen 120s auf 3600s erhöht.
+index.php mit dem Frontend. Hier kann mit dem Parameter "Depth" eingestellt werden wie Tief gecrawled werden soll, da der Crawler und die Specherung der Daten in die Datenbank seine Zeit benötigt, wurde die Abbruchzeit des Scripts von standardmäßigen 120s auf 3600s erhöht. Beim klick auf "start" wird die submit.php in einem neuen Tab aufgerufen, so dass die Suchfunktion bereits genutzt werden kann.
 
 create_tables.php die auf mydb.sql zugreift und die Tabellen generieren lässt
 
